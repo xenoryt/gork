@@ -1,39 +1,9 @@
 package main
 
-import "fmt"
-
-/* Object is the basic type that anything that
-can be physically "sensed" should implement.
- - View() should return a description of the of object. */
-type Object interface {
-	View() string
-}
-
-/* Surface is anything that can have something
-physically placed on top of it. */
-type Surface interface {
-	Recieve(*Placeable) error
-	Remove(*Placeable) error
-}
-
-/* Placeable is any object that can also be placed (or embedded)
-onto a surface. Placeable objects can be taken as well. */
-type Placeable interface {
-	Place(*Surface) (string, error)
-	Take() (string, error)
-}
-
-/* Usable is any object that can be used or activated. */
-type Useable interface {
-	Use() error
-}
-
-/* Item is an object that can be placed and used */
-type Item interface {
-	Object
-	Placeable
-	Useable
-}
+import (
+	"fmt"
+	_ "github.com/xenoryt/gork/game"
+)
 
 type Player interface {
 	Stats() string
@@ -45,6 +15,8 @@ type Being struct {
 	maxhp int
 	def   int
 	str   int
+	//bag   []game.Item
+	//held  game.Wieldable
 }
 
 func (b Being) Stats() string {
@@ -57,6 +29,7 @@ func (b Being) Stats() string {
 
 type Human struct {
 	Being
+	maxhp int
 }
 
 func (h Human) Greet() string {
@@ -65,7 +38,7 @@ func (h Human) Greet() string {
 
 func main() {
 	sprite := Being{"Spirit", 10, 10, 0, 1}
-	player := Human{Being{"Player", 15, 15, 3, 4}}
+	player := Human{Being{"Player", 15, 15, 3, 4}, 40}
 	player.maxhp += 10 //level up!
 
 	beings := make([]Player, 2)
