@@ -20,11 +20,10 @@ type Being struct {
 }
 
 func (b Being) Stats() string {
-	return fmt.Sprintf(
-		"- %s -\n"+
-			"hp: %d/%d\n"+
-			"def: %d\n"+
-			"str: %d", b.name, b.hp, b.maxhp, b.def, b.str)
+	return fmt.Sprintf("- %s -\n"+
+		"hp: %d/%d\n"+
+		"def: %d\n"+
+		"str: %d", b.name, b.hp, b.maxhp, b.def, b.str)
 }
 
 type Human struct {

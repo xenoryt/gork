@@ -6,7 +6,7 @@ package game
 //	EFFECT_BOOST
 
 type Effect interface {
-	Effect() error //This is for delayed effects
+	Effect() error
 	Duration() int
 	Name() string
 	Status() string
@@ -20,15 +20,18 @@ type boost struct {
 }
 
 type basicEffect struct {
-	name     string
-	status   string
-	duration int // in number of turns
-	damage   int
-	heal     int
-	boosts   boost
+	name      string
+	status    string
+	duration  int // in number of turns
+	damage    int
+	heal      int
+	relDamage bool // true if the amount is by percentage (default false)
+	relHeal   bool // (if it is, it has to be <=100)
+	boosts    boost
 }
 
 func (eff basicEffect) Effect() error {
+	//TODO: implement this
 	return nil
 }
 func (eff basicEffect) Duration() int {
@@ -52,6 +55,7 @@ func GenerateEffects() map[string]Effect {
 		name:     "poison",
 		status:   "poisoned", //Can leave this blank. default is name+"ed"
 		duration: 10,
+		damage:   10,
 		heal:     0,
 		boosts:   boost{},
 	}
