@@ -5,6 +5,7 @@ package world
 /*Scene is a location on the world map. It should
 include brief narrative description and paths to other Scenes*/
 type Scene struct {
+	Terrain     //The location of the scene is also a type of terrain
 	description string
 	paths       []*Scene
 }
@@ -26,6 +27,6 @@ func (world World) Size() (row, col int) {
 	return len(world.grid), len(world.grid[0])
 }
 
-func (world World) GetScene() (x, y int) {
+func (world World) GetScene(x, y int) Scene {
 	return world.grid[y][x]
 }

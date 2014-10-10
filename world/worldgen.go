@@ -3,6 +3,30 @@ package world
 /*This file covers the world generation related functions.
 Mainly the Gen() function which generates everything*/
 
+/*pangea is an undeveloped world with only the basic landscape features.
+By developing story and history, pangea can evolve into a world. */
+type pangea struct {
+	grid   [][]Terrain
+	width  int
+	height int
+}
+
+func (p pangea) Init(numRows, numCols int) {
+	p.grid = make([][]Terrain, numRows, numCols)
+	p.width = numCols
+	p.height = numRows
+}
+
+func (p pangea) String() string {
+	str := ""
+	for _, row := range p.grid {
+		for _, item := range row {
+			str += string(item.Symbol())
+		}
+	}
+	return str
+}
+
 /*Gen generates and returns a world*/
 func Gen(row, col int) World {
 	/* Some algorithms I'm thinking of:
@@ -19,4 +43,6 @@ func Gen(row, col int) World {
 	line. Lakes should generate as batches of ovular shapes. Rivers should
 	generate as thin lines that branch out.
 	*/
+
+	var world pangea
 }

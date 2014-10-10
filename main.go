@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	_ "github.com/xenoryt/gork/game"
+	"github.com/xenoryt/gork/world"
 )
 
 type Player interface {
@@ -36,17 +37,6 @@ func (h Human) Greet() string {
 }
 
 func main() {
-	sprite := Being{"Spirit", 10, 10, 0, 1}
-	player := Human{Being{"Player", 15, 15, 3, 4}, 40}
-	player.maxhp += 10 //level up!
-
-	beings := make([]Player, 2)
-	beings[0] = sprite
-	beings[1] = player
-	for _, being := range beings {
-		if h, ok := being.(Human); ok {
-			fmt.Println(h.Greet())
-		}
-		fmt.Println(being.Stats())
-	}
+	newWorld := world.Gen(20, 20)
+	fmt.Println(newWorld)
 }
