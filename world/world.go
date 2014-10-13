@@ -20,6 +20,10 @@ type Scene struct {
 	opacity int
 }
 
+func (scene Scene) String() string {
+	return string(scene.Symbol())
+}
+
 //Returns true iff the player can see this scene
 func (scene Scene) GetLit() bool {
 	return scene.lit == 2
@@ -45,21 +49,36 @@ func (scene Scene) Opacity() int {
 
 /*World contains a grid of Scenes to visit*/
 type World struct {
-	inited bool
-	grid   [][]Scene
+	Inited bool
+	Grid   [][]Scene
+	Width  int
+	Height int
 }
 
-func (world World) World(rows, cols int) {
-	world.grid = make([][]Scene, rows)
+func (world *World) Init(rows, cols int) {
+	world.Grid = make([][]Scene, rows)
 	for r := 0; r < rows; r++ {
-		world.grid[r] = make([]Scene, cols)
+		world.Grid[r] = make([]Scene, cols)
 	}
+	world.Width = cols
+	world.Height = rows
+}
+
+func (world World) String() string {
+	str := ""
+	for row := 0; row < world.Height; row++ {
+		for col := 0; col < world.Width; col++ {
+			str += world.Grid[row][col].String()
+		}
+		str += "\n"
+	}
+	return str
 }
 
 func (world World) Size() (row, col int) {
-	return len(world.grid), len(world.grid[0])
+	return len(world.Grid), len(world.Grid[0])
 }
 
 func (world World) GetScene(x, y int) Scene {
-	return world.grid[y][x]
+	return world.Grid[y][x]
 }

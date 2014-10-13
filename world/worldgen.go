@@ -44,7 +44,7 @@ func Gen(row, col int) World {
 	generate as thin lines that branch out.
 	*/
 
-	var world pangea
+	//var world pangea
 
 	//TEMPORARY
 	return World{}

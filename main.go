@@ -7,37 +7,21 @@ import (
 	"github.com/xenoryt/gork/world"
 )
 
-type Player interface {
-	Stats() string
-}
+const mapfile = "/home/xenoryt/programming/gocode/src/github.com/xenoryt/gork/map1.txt"
 
-type Being struct {
-	name  string
-	hp    int
-	maxhp int
-	def   int
-	str   int
-	//bag   []game.Item
-	//held  game.Wieldable
-}
-
-func (b Being) Stats() string {
-	return fmt.Sprintf("- %s -\n"+
-		"hp: %d/%d\n"+
-		"def: %d\n"+
-		"str: %d", b.name, b.hp, b.maxhp, b.def, b.str)
-}
-
-type Human struct {
-	Being
-	maxhp int
-}
-
-func (h Human) Greet() string {
-	return "Hi! I am " + h.name + " and my stats are:"
-}
+var player Player
 
 func main() {
-	newWorld := world.Gen(20, 20)
-	fmt.Println(newWorld)
+	worldmap, err := world.LoadWorld(mapfile)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	//Init player
+	player.x = worldmap.Width / 2
+	player.y = worldmap.Height / 2
+
+	//Something basic
+	fmt.Println(worldmap)
 }

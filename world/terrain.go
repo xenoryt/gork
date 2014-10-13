@@ -52,6 +52,7 @@ type Terrain interface {
 
 	Name() string
 	Altitude() int
+	Develop() Scene
 
 	priority() int
 
@@ -63,7 +64,8 @@ type basicTerrain struct {
 	name     string
 	symbol   byte
 	altitude int
-	priority int
+	zlevel   int
+	opacity  int
 
 	stamp generator
 	path  paver
@@ -78,11 +80,23 @@ func (t basicTerrain) Symbol() byte {
 func (t basicTerrain) Altitude() int {
 	return t.altitude
 }
+func (t basicTerrain) priority() int {
+	return t.zlevel
+}
 func (t basicTerrain) stampgen() generator {
 	return t.stamp
 }
 func (t basicTerrain) pathgen() paver {
 	return t.path
+}
+func (t basicTerrain) Develop() Scene {
+	scene := Scene{
+		Terrain:     t,
+		description: "",
+		lit:         0,
+		opacity:     t.opacity,
+	}
+	return scene
 }
 
 func mountainstamp(self basicTerrain, world *pangea, x, y, sizex, sizey int) {
@@ -124,17 +138,6 @@ func mountainpath(x, y int) (int, int) {
 	return x, y
 }
 
-func MountainTerrain() basicTerrain {
-	terr := basicTerrain{
-		name:     "Mountain",
-		symbol:   '^',
-		altitude: 1000 + rand.Intn(500) - 250,
-	}
-	terr.stamp = mountainstamp
-	terr.path = mountainpath
-	return terr
-}
-
 func WaterStamp(self basicTerrain, world *pangea, x, y, sizex, sizey int) {
 	//The equation of an eclipse is x^2/a^2 + y^2/b^2 = 1
 	//where 2*a is the width and 2*b is the height
@@ -143,8 +146,8 @@ func WaterStamp(self basicTerrain, world *pangea, x, y, sizex, sizey int) {
 		for col := 0; col < sizex; col++ {
 			//We want the to use the values relative to (x,y) which is the
 			//centre
-			curx := col - x
-			cury := row - y
+			//curx := col - x
+			//cury := row - y
 
 			//We want to introduce randomness but we don't want to have holes
 			//in middle of ocean!
@@ -152,13 +155,43 @@ func WaterStamp(self basicTerrain, world *pangea, x, y, sizex, sizey int) {
 	}
 }
 
+func MountainTerrain() basicTerrain {
+	terr := basicTerrain{
+		name:     "Mountain",
+		symbol:   '^',
+		altitude: 1000 + rand.Intn(500) - 250,
+		opacity:  0,
+	}
+	terr.stamp = mountainstamp
+	terr.path = mountainpath
+	return terr
+}
 func WaterTerrain() basicTerrain {
 	terr := basicTerrain{
 		name:     "Water",
 		symbol:   '~',
 		altitude: rand.Intn(300) - 150,
+		opacity:  -1,
 	}
 	terr.stamp = mountainstamp
 	terr.path = mountainpath
+	return terr
+}
+func ForestTerrain() basicTerrain {
+	terr := basicTerrain{
+		name:     "Forest",
+		symbol:   '&',
+		altitude: rand.Intn(600),
+		opacity:  3,
+	}
+	return terr
+}
+func GrassTerrain() basicTerrain {
+	terr := basicTerrain{
+		name:     "Grassland",
+		symbol:   '.',
+		altitude: rand.Intn(100),
+		opacity:  -1,
+	}
 	return terr
 }
