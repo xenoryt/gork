@@ -45,4 +45,7 @@ func Gen(row, col int) World {
 	*/
 
 	var world pangea
+
+	//TEMPORARY
+	return World{}
 }

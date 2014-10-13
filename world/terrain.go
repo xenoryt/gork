@@ -2,7 +2,7 @@ package world
 
 import (
 	"math/rand"
-	"time"
+	_ "time"
 )
 
 //generator takes a size and returns what a basic "unit" of a terrain
@@ -98,22 +98,24 @@ func mountainstamp(self basicTerrain, world *pangea, x, y, sizex, sizey int) {
 	  ^
 	*/
 
-	if size == 0 {
-		return
-	}
+	/*
+		if size == 0 {
+			return
+		}
 
-	rand.Seed(time.Now().UnixNano())
-	// Note: To create randomness in the shape, have a 10% chance of "failure"
-	if rand.Intn(10) < 3 {
-		newtrn := self
-		world.grid[y][x] = newtrn
-	}
+		rand.Seed(time.Now().UnixNano())
+		// Note: To create randomness in the shape, have a 10% chance of "failure"
+		if rand.Intn(10) < 3 {
+			newtrn := self
+			world.grid[y][x] = newtrn
+		}
 
-	// Now recursively create more terrain
-	mountainstamp(self, world, x+1, y, sizex-1, sizey)
-	mountainstamp(self, world, x-1, y, sizex-1, sizey)
-	mountainstamp(self, world, x, y+1, sizex, sizey-1)
-	mountainstamp(self, world, x, y-1, sizex, sizey-1)
+		// Now recursively create more terrain
+		mountainstamp(self, world, x+1, y, sizex-1, sizey)
+		mountainstamp(self, world, x-1, y, sizex-1, sizey)
+		mountainstamp(self, world, x, y+1, sizex, sizey-1)
+		mountainstamp(self, world, x, y-1, sizex, sizey-1)
+	*/
 }
 func mountainpath(x, y int) (int, int) {
 	if rand.Intn(2) == 0 {

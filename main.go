@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	_ "github.com/xenoryt/gork/fov"
 	_ "github.com/xenoryt/gork/game"
 	"github.com/xenoryt/gork/world"
 )
