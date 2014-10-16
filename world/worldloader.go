@@ -44,6 +44,7 @@ func LoadWorld(file string) (World, error) {
 				terr, err := loadTerrain(lines[row][col])
 				if err == nil {
 					world.Grid[row][col] = terr.Develop()
+					world.Grid[row][col].SetLit(false)
 				}
 			}
 		}

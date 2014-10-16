@@ -3,8 +3,9 @@ using technniques such as shadowcasting.*/
 package fov
 
 import (
-//This is needed as we will be changing light values in the world
-//"github.com/xenoryt/gork/world"
+	//This is needed as we will be changing light values in the world
+	//"github.com/xenoryt/gork/world"
+	"fmt"
 )
 
 type slope float64
@@ -59,9 +60,52 @@ type worldData struct {
 
 //http://www.roguebasin.com/index.php?title=Computing_LOS_for_Large_Areas
 //http://www.roguebasin.com/index.php?title=FOV_using_recursive_shadowcasting
+/*CastShadows lights up cells in the given grid assuming that the object
+located at (x,y) is luminous*/
 func CastShadows(grid [][]Cell, x, y int) {
-	//Create worldData object and scan the world
-	//using goroutines.
+	//First create the worldData object
+	data := worldData{
+		grid:     grid,
+		maxdepth: 6,
+		xcenter:  x,
+		ycenter:  y,
+	}
+	ch := make(chan bool)
+
+	/* We scan 8 different sectors
+	\1|2/
+	8\|/3
+	-----
+	7/|\4
+	/6|5\
+	*/
+
+	//scan sector 1
+	go data.scanRow(1, -1, 0, ch)
+	//scan sector 2
+	go data.scanRow(1, 1, 0, ch)
+	//scan sector 6
+	go data.scanRow(-1, 1, 0, ch)
+	//scan sector 5
+	go data.scanRow(-1, -1, 0, ch)
+
+	//scan sector 3
+	go data.scanCol(1, 1, 0, ch)
+	//scan sector 3
+	go data.scanCol(1, -1, 0, ch)
+	//scan sector 8
+	go data.scanCol(-1, -1, 0, ch)
+	//scan sector 7
+	go data.scanCol(-1, 1, 0, ch)
+
+	//The (x,y) location itself should be lit.
+	grid[y][x].SetLit(true)
+
+	//Now we wait until it has finished scanning
+	for i := 0; i < 8; i++ {
+		fmt.Println("waiting", i)
+		<-ch
+	}
 }
 
 /*
@@ -114,6 +158,14 @@ func (data *worldData) scanRow(depth int, startslope, endslope slope, ch chan bo
 	startx := int(startslope*slope(depth) + slope(data.xcenter) + 0.5)
 	endx := int(endslope*slope(depth) + slope(data.xcenter) + 0.5)
 
+	//Double check we are still within bounds.
+	if row < 0 || row >= len(data.grid) || startx < 0 ||
+		startx >= len(data.grid[0]) {
+
+		ch <- true
+		return
+	}
+
 	//how much to increment counter by
 	step := 1
 	chsize := endx - startx
@@ -136,6 +188,7 @@ func (data *worldData) scanRow(depth int, startslope, endslope slope, ch chan bo
 				//Calculate new start slope
 				newslope := calcSlope(true, col+step, row, data.xcenter, data.ycenter)
 				go data.scanRow(depth+1*dir, newslope, endslope, newChan)
+				cell.SetLit(true)
 			}
 		} else if isOpaque(cell) {
 			// this cell is the first cell in the "wall"
@@ -144,7 +197,7 @@ func (data *worldData) scanRow(depth int, startslope, endslope slope, ch chan bo
 			blockerFound = true
 		} else {
 			cell.SetLit(true)
-			newChan <- true
+			chsize -= 1
 		}
 	}
 
@@ -175,6 +228,14 @@ func (data *worldData) scanCol(depth int, startslope, endslope slope, ch chan bo
 
 	starty := int(startslope*slope(depth) + slope(data.ycenter) + 0.5)
 	endy := int(endslope*slope(depth) + slope(data.ycenter) + 0.5)
+
+	//Double check we are still within bounds.
+	if col < 0 || col >= len(data.grid) || starty < 0 ||
+		starty >= len(data.grid[0]) {
+
+		ch <- true
+		return
+	}
 
 	//how much to increment counter by
 	step := 1
