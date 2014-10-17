@@ -54,29 +54,29 @@ func CastShadows(grid [][]Cell, x, y int, maxdepth int) {
 	*/
 
 	//scan sector 2
-	go data.scan(true, -maxdepth, x, y, -1, 0, chans[0])
+	go data.scan(true, -1, -maxdepth, x, y, -1, 0, chans[0])
 	//scan sector 1
-	go data.scan(true, -maxdepth, x, y, 1, 0, chans[1])
-	//scan sector 6
-	go data.scan(true, maxdepth, x, y, 1, 0, chans[2])
-	//scan sector 5
-	go data.scan(true, maxdepth, x, y, -1, 0, chans[3])
+	go data.scan(true, -1, -maxdepth, x, y, 1, 0, chans[1])
+	//scan sector 60,
+	go data.scan(true, 1, maxdepth, x, y, 1, 0, chans[2])
+	//scan sector 50,
+	go data.scan(true, 1, maxdepth, x, y, -1, 0, chans[3])
 
-	//scan sector 3
-	go data.scan(false, maxdepth, y, x, 1, 0, chans[4])
-	//scan sector 3
-	go data.scan(false, maxdepth, y, x, -1, 0, chans[5])
-	//scan sector 8
-	go data.scan(false, -maxdepth, y, x, -1, 0, chans[6])
-	//scan sector 7
-	go data.scan(false, -maxdepth, y, x, 1, 0, chans[7])
+	//scan sector 30,
+	go data.scan(false, 1, maxdepth, y, x, 1, 0, chans[4])
+	//scan sector 30,
+	go data.scan(false, 1, maxdepth, y, x, -1, 0, chans[5])
+	//scan sector 80,
+	go data.scan(false, -1, -maxdepth, y, x, -1, 0, chans[6])
+	//scan sector 70,
+	go data.scan(false, -1, -maxdepth, y, x, 1, 0, chans[7])
 
 	//The (x,y) location itself should be lit.
 	grid[y][x].SetLit(true)
 
 	litCells = []Cell{grid[y][x]}
 
-	//for i := 2; i < 8; i++ {
+	//for i := 1; i < 8; i++ {
 	//	close(chans[i])
 	//}
 
@@ -99,15 +99,13 @@ func (data *worldData) getCell(scanrow bool, variable, static int) Cell {
 /*scans the grid given. If scanrow is true, vcoordinate should be the x coordinate
 and scoordinate should be the y coordinate. If scanrow is false, then vcoordinate
 and scoordinate are reversed.*/
-func (data *worldData) scan(scanrow bool, maxdepth, vcoordinate, scoordinate int, startslope, endslope slope, ch chan Cell) {
+func (data *worldData) scan(scanrow bool, curdepth, maxdepth, vcoordinate, scoordinate int, startslope, endslope slope, ch chan Cell) {
 	defer func() {
 		close(ch)
 	}()
 
-	var curdepth int = -1
 	var depthdir int = -1
 	if maxdepth >= 0 {
-		curdepth = 1
 		depthdir = 1
 	}
 	var step int = 1 * depthdir
@@ -169,23 +167,33 @@ func (data *worldData) scan(scanrow bool, maxdepth, vcoordinate, scoordinate int
 
 		//start the loop to check for shadows.
 		isBlocked := false
+		firstcell := true
+
 		for variable := start; compare(variable, end); variable += step {
 			cell := data.getCell(scanrow, variable, static)
 			cell.SetLit(true)
 			ch <- cell
+			if firstcell {
+				firstcell = false
+				if cell.Opacity() == 0 {
+					isBlocked = true
+				}
+				continue
+			}
 
 			//if this is the first cell in the "wall"
 			if !isBlocked {
 				if cell.Opacity() == 0 {
 					newslope := calcSlope(variable-step, static, vcoordinate, scoordinate)
-					go data.scan(scanrow, maxdepth-curdepth, variable-step, static, startslope, newslope, newchan())
+					go data.scan(scanrow, curdepth, maxdepth, vcoordinate, scoordinate, startslope, newslope, newchan())
 					isBlocked = true
 				}
 			} else if cell.Opacity() != 0 {
 				//This is the last cell in the wall
-				startslope = calcSlope(variable+step, static, vcoordinate, scoordinate)
+				startslope = calcSlope(variable, static, vcoordinate, scoordinate)
 				fmt.Println("new slope", startslope)
 				//go data.scan(scanrow, maxdepth-curdepth, variable+step, static, newslope, endslope, newchan())
+				isBlocked = false
 			}
 		}
 
