@@ -65,5 +65,7 @@ func main() {
 		case "d":
 			player.Move(EAST)
 		}
+
+		fov.Blackout()
 	}
 }

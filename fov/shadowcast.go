@@ -1,4 +1,4 @@
-/*Implements a way to get the player's current field of view
+/*Package fov implements a way to get the player's current field of view
 using technniques such as shadowcasting.*/
 package fov
 
@@ -10,44 +10,16 @@ import (
 
 type slope float64
 
-//Define an arbitrarily large number to represent "NaN"
-const _Nan slope = 99991
+//Keeps track of all the lit cells.
+var litCells []Cell
 
-func (s slope) isNan() bool {
-	return s == _Nan
-}
-
-type Cell interface {
-	GetLit() bool
-	SetLit(bool) //This should be a pointer method
-
-	//Opacity returns how see through the cell is.
-	//-1 - can see through it
-	//0  - not see through
-	//1  - can see one cell past it
-	//n  - can see n cells past it
-	Opacity() int
-}
-
-//Some helper functions
-func isOpaque(cell Cell) bool {
-	return cell.Opacity() == 0
-}
-func calcSlope(inversed bool, startx, starty int, endx, endy int) slope {
-	dx := float64(starty - endy)
-	dy := float64(startx - endx)
-	if inversed {
-		if dy != 0 {
-			return slope(dx / dy)
-		} else {
-			return 0
-		}
-	} else {
-		if dx == 0 {
-			return _Nan
-		}
-		return slope(dy / dx)
+func calcSlope(newvar, newstatic int, oldvar, oldstatic int) slope {
+	ds := float64(newstatic - oldstatic)
+	dv := float64(newvar - oldvar)
+	if ds != 0 {
+		return slope(dv / ds)
 	}
+	return 0
 }
 
 //A struct to store data
@@ -58,11 +30,20 @@ type worldData struct {
 	ycenter  int
 }
 
+/*Blackout blacks out all the cells that were previously lit using CastShadows*/
+func Blackout() {
+	fmt.Println("blacking out", len(litCells))
+	for _, cell := range litCells {
+		cell.SetLit(false)
+	}
+}
+
 //http://www.roguebasin.com/index.php?title=Computing_LOS_for_Large_Areas
 //http://www.roguebasin.com/index.php?title=FOV_using_recursive_shadowcasting
+
 /*CastShadows lights up cells in the given grid assuming that the object
 located at (x,y) is luminous*/
-func CastShadows(grid [][]Cell, x, y int) {
+func CastShadows(grid [][]Cell, x, y int, maxdepth int) {
 	//First create the worldData object
 	data := worldData{
 		grid:     grid,
@@ -70,7 +51,10 @@ func CastShadows(grid [][]Cell, x, y int) {
 		xcenter:  x,
 		ycenter:  y,
 	}
-	ch := make(chan bool)
+	chans := make([]chan Cell, 8)
+	for i := 0; i < 8; i++ {
+		chans[i] = make(chan Cell)
+	}
 
 	/* We scan 8 different sectors
 	\1|2/
@@ -81,201 +65,127 @@ func CastShadows(grid [][]Cell, x, y int) {
 	*/
 
 	//scan sector 1
-	go data.scanRow(1, -1, 0, ch)
+	go data.scan(true, maxdepth, y, -1, 0, chans[0])
 	//scan sector 2
-	go data.scanRow(1, 1, 0, ch)
+	go data.scan(true, maxdepth, y, 1, 0, chans[1])
 	//scan sector 6
-	go data.scanRow(-1, 1, 0, ch)
+	go data.scan(true, maxdepth, y, 1, 0, chans[2])
 	//scan sector 5
-	go data.scanRow(-1, -1, 0, ch)
+	go data.scan(true, maxdepth, y, -1, 0, chans[3])
 
 	//scan sector 3
-	go data.scanCol(1, 1, 0, ch)
+	go data.scan(false, maxdepth, x, 1, 0, chans[4])
 	//scan sector 3
-	go data.scanCol(1, -1, 0, ch)
+	go data.scan(false, maxdepth, x, -1, 0, chans[5])
 	//scan sector 8
-	go data.scanCol(-1, -1, 0, ch)
+	go data.scan(false, maxdepth, x, -1, 0, chans[6])
 	//scan sector 7
-	go data.scanCol(-1, 1, 0, ch)
+	go data.scan(false, maxdepth, x, 1, 0, chans[7])
 
 	//The (x,y) location itself should be lit.
 	grid[y][x].SetLit(true)
 
+	litCells = []Cell{grid[y][x]}
+
 	//Now we wait until it has finished scanning
 	for i := 0; i < 8; i++ {
 		fmt.Println("waiting", i)
-		<-ch
-	}
-}
-
-/*
-func (data *worldData) scan(srow bool, start, end, ind int, f func(int, slope, slope, chan bool)) {
-	var iter, row, col int
-	if srow == -1 {
-		iter = &row
-		col = ind
-	} else {
-		iter = &col
-		row = ind
-	}
-	for *iter = start; *iter != endx; *iter += step {
-		var cell Cell = data.grid[row][col]
-		if blockerFound {
-			if !isOpaque(cell) {
-				//This is the last cell in the "wall"
-				//Calculate new start slope
-				newslope := calcSlope(srow, col+step, row, data.xcenter, data.ycenter)
-				go f(depth+1*dir, newslope, endslope, newChan)
-			} else { // this cell is the first cell in the "wall"
-				newslope := calcSlope(srow, col-step, row, data.xcenter, data.ycenter)
-				go f(depth+1*dir, startslope, newslope, newChan)
-			}
-		} else {
-			cell.SetLit(true)
-			newChan <- true
+		for cell := range chans[i] {
+			litCells = append(litCells, cell)
 		}
 	}
 }
-*/
 
-func (data *worldData) scanRow(depth int, startslope, endslope slope, ch chan bool) {
-	if depth >= data.maxdepth {
-		ch <- true //Notify other goroutines we're done.
-		return
+func (data *worldData) getData(scanrow bool, variable, static int) {
+	if !scanrow {
+		return data.grid[variable][static]
 	}
+	return data.grid[static][variable]
+}
 
-	//The direction we will be recursing
-	//If the initial depth is less than 0, then we want to recurse
-	//downwards.
-	dir := 1
-	if depth < 0 {
-		dir = -dir
+/*scans the grid given. If scanrow is true, vcoordinate should be the x coordinate
+and scoordinate should be the y coordinate. If scanrow is false, then vcoordinate
+and scoordinate are reversed.*/
+func (data *worldData) scan(scanrow bool, maxdepth, vcoordinate, scoordinate int, startslope, endslope slope, ch chan Cell) {
+	defer func() {
+		close(ch)
+	}()
+
+	var curdepth int = -1
+	var depthdir int = -1
+	if maxdepth >= 0 {
+		curdepth = 1
+		depthdir = 1
 	}
-
-	//The row we are currently on.
-	row := data.ycenter - depth
-
-	startx := int(startslope*slope(depth) + slope(data.xcenter) + 0.5)
-	endx := int(endslope*slope(depth) + slope(data.xcenter) + 0.5)
-
-	//Double check we are still within bounds.
-	if row < 0 || row >= len(data.grid) || startx < 0 ||
-		startx >= len(data.grid[0]) {
-
-		ch <- true
-		return
-	}
-
-	//how much to increment counter by
-	step := 1
-	chsize := endx - startx
-	if endx < startx {
+	var step int = 1
+	if startslope > 0 {
 		step = -1
-		chsize = -chsize //make sure chsize >= 0
 	}
 
-	newChan := make(chan bool, chsize)
+	var chans []chan Cell
 
-	//This is true iff all the previous cells before current is a blocker
-	blockerFound := false
-
-	//using != in the condition since endx can be greater or smaller than col
-	for col := startx; col != endx; col += step {
-		var cell Cell = data.grid[row][col]
-		if blockerFound {
-			if !isOpaque(cell) {
-				//This is the last cell in the "wall"
-				//Calculate new start slope
-				newslope := calcSlope(true, col+step, row, data.xcenter, data.ycenter)
-				go data.scanRow(depth+1*dir, newslope, endslope, newChan)
-				cell.SetLit(true)
+	//We want to make sure we recieved all the data from all the channels before
+	//closing ours.
+	defer func() {
+		for i := range chans {
+			for cell := range chans[i] {
+				ch <- cell
 			}
-		} else if isOpaque(cell) {
-			// this cell is the first cell in the "wall"
-			newslope := calcSlope(true, col-step, row, data.xcenter, data.ycenter)
-			go data.scanRow(depth+1*dir, startslope, newslope, newChan)
-			blockerFound = true
-		} else {
+		}
+	}()
+
+	newchan := func() chan Cell {
+		ch := make(chan Cell)
+		chans = append(chans, ch)
+		return ch
+	}
+
+	for ; math.abs(curdepth) < math.abs(maxdepth); curdepth += 1 * depthdir {
+		start := int(startslope*slope(curdepth) + 0.5)
+		end := int(endslope*slope(curdepth) + 0.5)
+		var static int = scoordinate + curdepth
+
+		//Double check to make sure we aren't going out of bounds
+		if static < 0 || static > len(data.grid) {
+			break
+		}
+
+		//Make sure these stay within bounds!
+		if start < 0 {
+			start = 0
+		} else if start >= len(data.grid[0]) {
+			start = len(data.grid[0]) - 1
+		}
+		if end < 0 {
+			end = 0
+		} else if end >= len(data.grid[0]) {
+			end = len(data.grid[0]) - 1
+		}
+
+		//start the loop to check for shadows.
+		isBlocked := false
+		for variable := start; math.abs(variable) <= math.abs(end); variable += step {
+			cell := data.getCell(scanrow, variable, static)
 			cell.SetLit(true)
-			chsize -= 1
+			ch <- cell
+
+			//if this is the first cell in the "wall"
+			if !isBlocked {
+				if cell.Opacity() == 0 {
+					newslope := calcSlope(scanrow, variable-step, static, vcoordinate, scoordinate)
+					go data.scan(maxdepth-curdepth, variable-step, static, startslope, newslope, newchan())
+				}
+			} else if cell.Opacity() != 0 {
+				//This is the last cell in the wall
+				newslope := calcSlope(scanrow, variable+step, static, vcoordinate, scoordinate)
+				go data.scan(maxdepth-curdepth, variable+step, static, newslope, endslope, newchan())
+			}
+		}
+
+		//if the last cell is opaque then we don't need to continue
+		if isBlocked {
+			break
 		}
 	}
 
-	//Wait for the recursive goroutines we called to finish
-	for i := 0; i < chsize; i++ {
-		<-newChan
-	}
-
-	//Notify that we're done
-	ch <- true
-}
-func (data *worldData) scanCol(depth int, startslope, endslope slope, ch chan bool) {
-	if depth >= data.maxdepth {
-		ch <- true //Notify other goroutines we're done.
-		return
-	}
-
-	//The direction we will be recursing
-	//If the initial depth is less than 0, then we want to recurse
-	//downwards.
-	dir := 1
-	if depth < 0 {
-		dir = -dir
-	}
-
-	//The row we are currently on.
-	col := data.xcenter + depth
-
-	starty := int(startslope*slope(depth) + slope(data.ycenter) + 0.5)
-	endy := int(endslope*slope(depth) + slope(data.ycenter) + 0.5)
-
-	//Double check we are still within bounds.
-	if col < 0 || col >= len(data.grid) || starty < 0 ||
-		starty >= len(data.grid[0]) {
-
-		ch <- true
-		return
-	}
-
-	//how much to increment counter by
-	step := 1
-	chsize := endy - starty
-	if endy < starty {
-		step = -1
-		chsize = -chsize //make sure chsize >= 0
-	}
-
-	newChan := make(chan bool, chsize)
-
-	//This is true iff all the previous cells before current is a blocker
-	blockerFound := false
-
-	//using != in the condition since endx can be greater or smaller than col
-	for row := starty; row != endy; row += step {
-		var cell Cell = data.grid[row][col]
-		if blockerFound {
-			if !isOpaque(cell) {
-				//This is the last cell in the "wall"
-				//Calculate new start slope
-				newslope := calcSlope(false, col, row+step, data.xcenter, data.ycenter)
-				go data.scanRow(depth+1*dir, newslope, endslope, newChan)
-			}
-		} else if isOpaque(cell) {
-			// this cell is the first cell in the "wall"
-			newslope := calcSlope(false, col, row-step, data.xcenter, data.ycenter)
-			go data.scanRow(depth+1*dir, startslope, newslope, newChan)
-			blockerFound = true
-		} else {
-			cell.SetLit(true)
-			newChan <- true
-		}
-	}
-
-	//Wait for the recursive goroutines we called to finish
-	for i := 0; i < chsize; i++ {
-		<-newChan
-	}
-
-	//Notify that we're done
-	ch <- true
 }
