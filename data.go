@@ -12,7 +12,8 @@ Implements the following interfaces:
 - MapObject
 */
 type Player struct {
-	x, y int
+	x, y  int
+	sight int
 }
 
 func (player *Player) Move(dir Direction) {

@@ -36,13 +36,14 @@ func main() {
 	//Init player
 	player.x = worldmap.Width / 2
 	player.y = worldmap.Height / 2
+	player.sight = 6
 
 	//Add the player to the world.
 	worldmap.AddObject(&player)
 
 	var inp string
 	for {
-		fov.CastShadows(scene2cell(&worldmap), player.x, player.y)
+		fov.CastShadows(scene2cell(&worldmap), player.x, player.y, player.sight)
 		//Print the map
 		fmt.Println(worldmap)
 		fmt.Println(player.x, player.y)
