@@ -1,7 +1,5 @@
 package world
 
-import _ "github.com/xenoryt/gork/fov"
-
 /*Scene is a location on the world map. It should
 include brief narrative description and paths to other Scenes*/
 type Scene struct {
@@ -24,12 +22,12 @@ func (scene Scene) String() string {
 	return string(scene.Symbol())
 }
 
-//Returns true iff the player can see this scene
+//GetLit returns true iff the player can see this scene
 func (scene Scene) GetLit() bool {
 	return scene.lit == 2
 }
 
-//Sets whether or not the player can see this scene
+//SetLit sets whether or not the player can see this scene
 func (scene *Scene) SetLit(lit bool) {
 	if lit {
 		scene.lit = 2
@@ -38,7 +36,7 @@ func (scene *Scene) SetLit(lit bool) {
 	}
 }
 
-/*Returns the level of opacity.
+/*Opacity returns the level of opacity of the scene
 -1	- See through.
 0	- Can't see through it.
 n	- Can see n cells past this scene.
