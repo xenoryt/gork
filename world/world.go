@@ -1,5 +1,6 @@
-//Package world provides necessary structures and functions for rendering,
-//describing and generating worlds
+/*Package world provides necessary structures and functions for rendering,
+describing and generating worlds.
+This package is designed to be independent of any other non-standard packages.*/
 package world
 
 import (
