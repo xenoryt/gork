@@ -6,15 +6,16 @@ import (
 )
 
 type pane struct {
-	buffer []byte
-	width  int
-	height int
+	buffer   []byte
+	width    int
+	height   int
+	caretPos int
 }
 
 func newPane(buffer []byte, bwidth, x, y, w, h int) pane {
 	start := y*bwidth + x
 	end := (y+h)*bwidth + x + w
-	return pane{buffer[start:end], w, h}
+	return pane{buffer[start:end], w, h, 0}
 }
 
 func (p pane) inBounds(x, y int) bool {
@@ -26,14 +27,45 @@ func (p pane) inBounds(x, y int) bool {
 	}
 	return true
 }
-func (p *pane) print(text []byte, x, y int) error {
-	if p.inBounds(x, y) {
-		for i := range text {
-			p.buffer[i+x] = text[i]
+
+//Prints text to the pane
+func (p *pane) print(text []byte) error {
+	//We want to start from the previous print's position
+	bpos := p.caretPos
+
+	//We want to save the new position of the caret after printing
+	var i int = 0
+	defer func() {
+		p.caretPos = bpos + i
+	}()
+
+	for i = range text {
+		//Make sure we're not out of bounds
+		if i+bpos >= len(p.buffer) {
+			return GenericError("Error: couldn't print everything. Pane overflowed!")
 		}
-		return nil
+
+		//Add the character to the buffer
+		switch text[i] {
+		case '\n':
+			bpos += p.width % i
+		case '\t':
+			bpos += 4 - (i % 4)
+		default:
+			p.buffer[i+bpos] = text[i]
+		}
 	}
-	return GenericError("Out of bounds: (" + string(x) + ", " + string(y) + ")")
+	return nil
+}
+
+//Clears the pane of any text.
+func (p *pane) clear() {
+	//We shall start from the current caret position and keep
+	//rolling back until we hit the start again.
+	var i *int = &p.caretPos
+	for ; *i >= 0; *i-- {
+		p.buffer[*i] = ' '
+	}
 }
 
 /*TextDisplay is a text-based implementation of Display*/
