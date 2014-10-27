@@ -13,7 +13,7 @@ const (
 then finally display it to the user*/
 type Display interface {
 	//For initializing the display
-	Init(uint16, uint16) error
+	Init() error
 
 	//IsGUI is true iff this display can draw pictures
 	IsGUI() bool

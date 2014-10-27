@@ -10,7 +10,7 @@ var display Display
 var gui bool
 var cam camera
 
-func Init(x, y, int, width, height, uint16, textbased bool) error {
+func Init(x, y, int, textbased bool) error {
 	if textbased {
 		//display = TextDisplay{}
 		gui = false
