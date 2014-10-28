@@ -1,0 +1,74 @@
+Basic plot:
+	Centuries ago, a calamity known as The Decay took place. It was a 
+horrifying event that happened in stages. The first thing that happened was
+a giant solar flare that caused a solar EMP to envelope all of Earth.
+Machines around the world broke down and even caused several vehicles to
+explode. Despite the large scale damage, many thought this solar flare
+will pass away and electronic devices will return to normal. However, 
+that did not happen. Electromagnetic radiation continued to bombard Earth. 
+	If only that was the end of the tragedy. Growing number of reports 
+(through mail) of strange creatures being sighted at night caused unrest
+among the populace. They were named the Silhouettes since all the reports
+only describe their outline. Strange creatures, they are. No one has seen 
+one up close. Or if they have, they have not come back to tell the tale.
+	It didn't take long before rumours of disappearances to spread. At
+first it was only a few people. Nobody thought (or perhaps didn't want to
+think) it had anything to do with the Silhouettes. But more and more
+people kept disappearing and it became clear this was an urgent issue
+that needed to be addressed. Governments assured that the populace that
+they will return the missing people and brought in military. New rules
+were established to prevent further disappearances. People were no longer
+allowed to stay out late and had to be home before sunset. The 
+sight of military patrolling the streets only caused more unrest. Due to these
+countermeasures the number of disappearances dropped significantly and things
+were starting to look good. Governments around the world started to work 
+together. International conferences have been planned though communication
+was poor due to the lack of instantaneous communication and fast transportation.
+Locally, plans were underway to locate the origin of these Silhouettes. 
+Then everything changed when the fire nation attacked. Reports now came in
+about the disappearances of entire cities overnight.
+	Fortunately, the electromagnetic radiation did not permate underground. 
+The government made a rash decision. They placed select number of people into 
+freezing chambers placed underground with emgergency power that can last 
+hundreds of years. Unfortunately, documentation doesn't explain much about what
+happened after other than the fact that more and more towns disappeared. From
+the current state of the world you can only guess what took place. The people
+who have been put in the freezing chambers awoke to a world that was completely
+overrun by nature. Barely any remnants of the Old World remain. The 
+survivors built small villages and learnt that the Silhouettes generally 
+avoids light if not provoked. The survivors also encountered many different
+intelligent humanoid creatures. However, differing opinions between survivors
+caused disputes and eventually caused groups to break off and form separate 
+villages and factions.
+	The Felor faction welcomes these new species and treats them like any 
+other human being. They learned to work together, often teaching eachother
+new things.
+	The Revenant faction wishes to eradicate the Silhouettes and bring 
+mankind back to its former glory.
+
+
+Plans for the game:
+- villages and factions
+- allow trading (buy from one village, sell at another)
+- quests for helping transport merchant caravans
+- quests to defeat monsters
+- dungeons
+- jobs (such as alchemist, blacksmith, etc)
+- skills (learn using books so you can create your own class)
+- exp/level only for jobs. skills and your "class" depend on items/equip that
+  you obtain/craft as you explore.
+- random encounters?
+	- A final fantasy/pokemon style random encounter BUT instead of using turn
+	  based skill choosing battle, player will be fighting on a zoomed in map
+	  in semi real time.
+- crafting?
+	- thinking about making items and selling it to towns/factions and possibly
+	  giving them a boost
+- different recipes/items available depending on which faction likes you.
+- deals with the devil?
+	- allows you to side with the Silhouettes and kill all of humanity
+	- be warned: humanity likes to fight back!
+
+
+Goal:
+ummm...
