@@ -68,6 +68,10 @@ Plans for the game:
 - deals with the devil?
 	- allows you to side with the Silhouettes and kill all of humanity
 	- be warned: humanity likes to fight back!
+- monster raids occur at timed intervals
+	- quest will be given to help prevent attack
+	- monsters will level up depending on amount of damage dealt to village
+	  such as # of villagers killed
 
 
 Goal:
