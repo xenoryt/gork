@@ -1,4 +1,4 @@
-package render
+package ui
 
 type GenericError string
 type InitError string

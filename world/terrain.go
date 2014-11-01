@@ -1,40 +1,67 @@
 package world
 
 import (
-	"math/rand"
-	_ "time"
+	"github.com/xenoryt/gork/ui/color"
 )
 
-//Terrain just contains basic information about the land
-type Terrain interface {
-	//Symbol should return a character representation of the terrain
-	Symbol() byte
+type Terrain struct {
+	TerrType string
+	Symbol   byte
+	Altitude int
+	Color    int16
+	//How much further/less can the player see
+	//if they are standing on this terrain.
+	SightBonus int
 
-	Name() string
-	Altitude() int
-	Develop() Scene
+	//How dense the terrain is. This number will be subtracted from
+	//the player's sight
+	//Difference between this and SightBonus is that this affects player
+	//even if they are not standing on this tile.
+	Density float32
 
-	priority() int
-}
-
-type basicTerrain struct {
-	name     string
-	symbol   byte
-	altitude int
-	zlevel   int
-	opacity  int
-	path     paver
+	//If the terrain is tall, players cannot see past it unless
+	//they themselves are at same altitude or higher up
+	Tall bool
 }
 
-func (t basicTerrain) Name() string {
-	return t.name
-}
-func (t basicTerrain) Symbol() byte {
-	return t.symbol
-}
-func (t basicTerrain) Altitude() int {
-	return t.altitude
-}
-func (t basicTerrain) priority() int {
-	return t.zlevel
+//Returns the terrain given the altitude.
+func newTerrain(alt int) (t Terrain) {
+	t.Altitude = alt
+	switch {
+	case alt < -200:
+		t.TerrType = "Deep Water"
+		t.Color = color.DarkBlue
+		t.Symbol = '~'
+		t.SightBonus = -2
+	case alt < 0:
+		t.TerrType = "Water"
+		t.Color = color.LightBlue
+		t.Symbol = '~'
+	case alt < 50:
+		t.TerrType = "Sand"
+		t.Color = color.Yellow
+		t.Symbol = ','
+	case alt < 350:
+		t.TerrType = "Grass"
+		t.Color = color.Green
+		t.Symbol = '.'
+	case alt < 650:
+		t.TerrType = "Forest"
+		t.Color = color.Green
+		t.Symbol = '&'
+		t.Density = 1
+	case alt < 900:
+		t.TerrType = "Mountain"
+		t.Color = color.Gray
+		t.Symbol = '^'
+		t.SightBonus = 2
+		t.Tall = true
+	default:
+		t.TerrType = "Snowy Peak"
+		t.Color = color.White
+		t.Symbol = '*'
+		t.SightBonus = 4
+		t.Tall = true
+	}
+	return
 }

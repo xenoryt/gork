@@ -1,6 +1,7 @@
-package render
+package ui
 
 import (
+	. "github.com/xenoryt/gork/rect"
 	"github.com/xenoryt/gork/world"
 )
 
@@ -17,14 +18,13 @@ type Display interface {
 
 	//IsGUI is true iff this display can draw pictures
 	IsGUI() bool
-	//Renders an object onto the display
-	Render(Renderable) error
 
 	//Updates the display and outputs it to the screen
 	Update()
-	DrawWorld(world.World, camera)
-	DrawStats()
-	DrawDesc()
+	DisplayWorld(Rect)
+	DisplayStats()
+	DisplayDesc()
+	PrintMessage(string)
 
 	Width() int
 	Height() int

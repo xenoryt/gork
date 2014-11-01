@@ -1,8 +1,9 @@
-package render
+package ui
 
 import (
 	gc "code.google.com/p/goncurses"
 	"fmt"
+	. "github.com/xenoryt/gork/rect"
 	"github.com/xenoryt/gork/world"
 	"log"
 )
@@ -125,10 +126,10 @@ func (display TextDisplay) Init() error {
 		//We want to split up the screen into 3 sections like so:
 		//
 		//	+-------------+----------+
-		//	| (4) terrain | (3) stat |
-		//	+-------------+----------+
+		//	|             | (3) stat |
+		//	| (1) world   +----------+
 		//	|             |          |
-		//	| (1) world   | (2) desc |
+		//	|             | (2) desc |
 		//	|             |          |
 		//	|             |          |
 		//	+-------------+----------+
@@ -136,7 +137,6 @@ func (display TextDisplay) Init() error {
 		//	(1) is where the world is drawn
 		//	(2) is where the description of the world is displayed
 		//	(3) is where the status of the player is displayed
-		//  (4) is where the terrain information is displayed
 		//
 		//	The world pane and status will be 25 chars wide while the
 		//  terrain and scene descriptions will take the remaining space
@@ -164,7 +164,7 @@ func (display *TextDisplay) Render(obj Renderable) error {
 	return GenericError("Invalid object recieved: not a TextObject")
 }*/
 
-func (display *TextDisplay) DrawWorld(wmap world.World, cam camera) {
+func (display *TextDisplay) DrawWorld(wmap world.World, cam Rect) {
 	//Get the current view of the world and put it into the world pane
 }
 

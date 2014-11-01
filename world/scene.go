@@ -3,23 +3,29 @@ package world
 /*Scene is a location on the world map. It should
 include brief narrative description and paths to other Scenes*/
 type Scene struct {
-	Terrain     //The location of the scene is also a type of terrain
-	description string
+	Terrain //The location of the scene is also a type of terrain
 
-	paths []*Scene
-
+	//where the scene is on the map
+	x, y int
 	/*Whether or not the player can see this location.
 	  0 - can't see it (at all)
 	  1 - Saw it before (greyed out due to fog of war)
 	  2 - Can see it fully
 	*/
-	lit int8
+	lit         int8
+	opacity     int
+	traversable bool
+}
 
-	opacity int
+func (scene *Scene) setLoc(x, y int) {
+	scene.x, scene.y = x, y
+}
+func (scene *Scene) GetLoc() (x, y int) {
+	return scene.x, scene.y
 }
 
 func (scene Scene) String() string {
-	return string(scene.Symbol())
+	return string(scene.Symbol)
 }
 
 //GetLit returns true iff the player can see this scene
