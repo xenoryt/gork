@@ -65,3 +65,11 @@ func newTerrain(alt int) (t Terrain) {
 	}
 	return
 }
+
+func pathTerrain(alt int) (t Terrain) {
+	t.TerrType = "Path"
+	t.Color = color.Brown
+	t.Symbol = '='
+	t.Altitude = alt
+	return
+}

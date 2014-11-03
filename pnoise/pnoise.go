@@ -75,7 +75,7 @@ func noise(x, y int32) float64 {
 func fnoise(x, y float64) float64 {
 	n := int32(x + y*57)
 	n = (n << 13) ^ n
-	return float64(1.0 - float64((n*(n*n*15731+789221)+1376312589)&0x7fffffff)/1073741824.0)
+	return float64(1.0 - float64((n*(n*n*p1+p2)+p3)&0x7fffffff)/1073741824.0)
 }
 
 func smoothNoise(x, y int32) float64 {
