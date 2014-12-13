@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-const mapfile = "/home/xenoryt/programming/gocode/src/github.com/xenoryt/gork/map1.txt"
+const mapfile = "data/map.txt"
 
 var player Player
 

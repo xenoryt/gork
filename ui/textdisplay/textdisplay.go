@@ -1,12 +1,23 @@
-package ui
+package TextDisplay
 
 import (
 	gc "code.google.com/p/goncurses"
 	"fmt"
+	. "github.com/xenoryt/gork/error"
 	. "github.com/xenoryt/gork/rect"
+	uiconst "github.com/xenoryt/gork/ui/uiconstants"
 	"github.com/xenoryt/gork/world"
 	"log"
 )
+
+var (
+	tdInstance textDisplay
+)
+
+//Get gets an instance of textDisplay
+func Get() textDisplay {
+	return tdInstance
+}
 
 type pane struct {
 	buffer   [][]byte
@@ -83,8 +94,8 @@ func (p *pane) clear() {
 	}
 }
 
-/*TextDisplay is a text-based implementation of Display*/
-type TextDisplay struct {
+/*textDisplay is a text-based implementation of Display*/
+type textDisplay struct {
 	buffer    []byte
 	worldpane pane
 	statpane  pane
@@ -96,7 +107,7 @@ type TextDisplay struct {
 }
 
 //Init initializes the display to a specific width and height
-func (display TextDisplay) Init() error {
+func (display textDisplay) Init() error {
 	if !display.initialized {
 
 		stdscr, err := gc.Init()
@@ -114,7 +125,7 @@ func (display TextDisplay) Init() error {
 
 		width, height := stdscr.MaxYX()
 
-		if width < _MinWidth || height < _MinHeight {
+		if width < uiconst.MinWidth || height < uiconst.MinHeight {
 			return InitError("Window does not meet minimum width and height requirements")
 		}
 		display.width = width
@@ -151,12 +162,12 @@ func (display TextDisplay) Init() error {
 	return InitError("Display already initialized!")
 }
 
-func (display TextDisplay) IsGUI() bool {
+func (display textDisplay) IsGUI() bool {
 	return false
 }
 
 /*
-func (display *TextDisplay) Render(obj Renderable) error {
+func (display *textDisplay) Render(obj Renderable) error {
 	//Check if obj is a TextObject, if so add it to the buffer
 	if txtobj, ok := obj.(TextObject); ok {
 		return display.put(txtobj)
@@ -164,19 +175,19 @@ func (display *TextDisplay) Render(obj Renderable) error {
 	return GenericError("Invalid object recieved: not a TextObject")
 }*/
 
-func (display *TextDisplay) DrawWorld(wmap world.World, cam Rect) {
+func (display *textDisplay) DrawWorld(wmap [][]world.Scene, cam Rect) {
 	//Get the current view of the world and put it into the world pane
 }
 
-func (display TextDisplay) Update() {
+func (display textDisplay) Update() {
 	for i := 0; i < display.Height(); i++ {
 		fmt.Println(string(display.buffer[i : display.Width()*(i+1)]))
 	}
 }
 
-func (display TextDisplay) Width() int {
+func (display textDisplay) Width() int {
 	return int(display.width)
 }
-func (display TextDisplay) Height() int {
+func (display textDisplay) Height() int {
 	return int(display.height)
 }

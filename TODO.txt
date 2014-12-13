@@ -1,0 +1,8 @@
+UI related
+- finish package for rendering UI
+- create package for rendering the world and entities
+
+World related
+- add villages
+- add roads
+- 

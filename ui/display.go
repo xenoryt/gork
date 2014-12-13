@@ -2,12 +2,7 @@ package ui
 
 import (
 	. "github.com/xenoryt/gork/rect"
-	"github.com/xenoryt/gork/world"
-)
-
-const (
-	_MinWidth  = 80
-	_MinHeight = 24
+	. "github.com/xenoryt/gork/ui/uiconstants"
 )
 
 /*Display is an object that is able to render things in a buffer
