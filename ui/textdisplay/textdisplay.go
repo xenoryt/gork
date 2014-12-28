@@ -114,17 +114,21 @@ func (display *textDisplay) Render(obj Renderable) error {
 	return GenericError("Invalid object recieved: not a TextObject")
 }*/
 
-func (display *textDisplay) TrackDrawable(drawable Drawable) {
+func (display *textDisplay) TrackDrawable(drawable Drawable) error {
 	w, err := gc.NewWindow(1, 1, 0, 0) //h,w, y,x
+	if err != nil {
+		return err
+	}
 	w.Print(drawable.GetSymbol())
 	objs = append(objs, textObject{w, drawable})
+	return nil
 }
 
 func (display *textDisplay) RemoveDrawable(drawable Drawable) {
 	//Loop through to find the element
 	for i, obj := range objs {
 		if obj.Drawable == drawable {
-			objs = append(objs[:i], objs[i+1:])
+			objs = append(objs[:i], objs[i+1:]...)
 			break
 		}
 	}
@@ -138,7 +142,7 @@ func (display *textDisplay) LoadWorld(rect Rect) {
 
 //Update updates the UI. Makes changes to all the different panes accordingly.
 func (display *textDisplay) Update(rect Rect) {
-	for i, obj := range objs {
+	for _, obj := range objs {
 		draw(obj, display.stdscr)
 	}
 }
