@@ -2,108 +2,48 @@ package TextDisplay
 
 import (
 	gc "code.google.com/p/goncurses"
-	"fmt"
-	. "github.com/xenoryt/gork/error"
+	"github.com/xenoryt/gork/errors"
 	. "github.com/xenoryt/gork/rect"
+	. "github.com/xenoryt/gork/ui/drawable"
 	uiconst "github.com/xenoryt/gork/ui/uiconstants"
-	"github.com/xenoryt/gork/world"
+	//"github.com/xenoryt/gork/world"
 	"log"
 )
 
 var (
-	tdInstance textDisplay
+	tdInstance *textDisplay = new(textDisplay)
+	objs       []textObject
 )
 
-//Get gets an instance of textDisplay
-func Get() textDisplay {
+//GetDisplay gets an instance of textDisplay
+func GetDisplay() *textDisplay {
 	return tdInstance
 }
 
-type pane struct {
-	buffer   [][]byte
-	width    int
-	height   int
-	caretPos int
+//textObject is to store information of objects that need to be rendered
+type textObject struct {
+	*gc.Window
+	Drawable
 }
 
-func newPane(buffer []byte, bwidth, x, y, w, h int) pane {
-	panelBuffer := make([][]byte, h)
-	for i := 0; i < h; i++ {
-		start := (y+i)*bwidth + x
-		end := (y+i)*bwidth + x + w
-		panelBuffer[i] = buffer[start:end]
-	}
-	return pane{panelBuffer, w, h, 0}
-}
-
-func (p pane) inBounds(x, y int) bool {
-	if x < 0 || x >= p.width {
-		return false
-	}
-	if y < 0 || y >= p.height {
-		return false
-	}
-	return true
-}
-
-func (p *pane) put(index int, char byte) {
-	p.buffer[index/p.width][index%p.width] = char
-}
-
-//Prints text to the pane
-func (p *pane) print(text []byte) error {
-	//We want to start from the previous print's position
-	bpos := p.caretPos
-
-	//We want to save the new position of the caret after printing
-	var i int = 0
-	defer func() {
-		p.caretPos = bpos + i
-	}()
-
-	for i = range text {
-		caret := i + bpos
-		//Make sure we're not out of bounds
-		if caret >= p.width*p.height {
-			return GenericError("Error: couldn't print everything. Pane overflowed!")
-		}
-
-		//Add the character to the buffer
-		switch text[i] {
-		case '\n':
-			bpos += p.width % i
-		case '\t':
-			bpos += 4 - (i % 4)
-			//if (i+bpos) % p.width < 4 {
-			//	//We went onto another line.
-			//}
-		default:
-			p.put(caret, text[i])
-		}
-	}
-	return nil
-}
-
-//Clears the pane of any text.
-func (p *pane) clear() {
-	//We shall start from the current caret position and keep
-	//rolling back until we hit the start again.
-	var i *int = &p.caretPos
-	for ; *i >= 0; *i-- {
-		p.put(*i, ' ')
-	}
+//draw Draws the object onto the window
+func draw(obj textObject, w *gc.Window) {
+	x, y := obj.GetLoc()
+	obj.MoveWindow(y, x)
+	w.Overlay(obj.Window)
 }
 
 /*textDisplay is a text-based implementation of Display*/
 type textDisplay struct {
-	buffer    []byte
-	worldpane pane
-	statpane  pane
-	descpane  pane
+	world       [][]textObject
+	worldBounds Rect
+	objs        []textObject
 
 	width, height int
 	initialized   bool
 	padding       int
+
+	stdscr *gc.Window
 }
 
 //Init initializes the display to a specific width and height
@@ -126,13 +66,12 @@ func (display textDisplay) Init() error {
 		width, height := stdscr.MaxYX()
 
 		if width < uiconst.MinWidth || height < uiconst.MinHeight {
-			return InitError("Window does not meet minimum width and height requirements")
+			return errors.New("Window does not meet minimum width and height requirements")
 		}
+		display.stdscr = stdscr
 		display.width = width
 		display.height = height
 		display.padding = 1
-
-		display.buffer = make([]byte, height*width)
 
 		//We want to split up the screen into 3 sections like so:
 		//
@@ -159,7 +98,7 @@ func (display textDisplay) Init() error {
 		display.initialized = true
 		return nil
 	}
-	return InitError("Display already initialized!")
+	return errors.New("Display already initialized!")
 }
 
 func (display textDisplay) IsGUI() bool {
@@ -175,14 +114,42 @@ func (display *textDisplay) Render(obj Renderable) error {
 	return GenericError("Invalid object recieved: not a TextObject")
 }*/
 
-func (display *textDisplay) DrawWorld(wmap [][]world.Scene, cam Rect) {
-	//Get the current view of the world and put it into the world pane
+func (display *textDisplay) TrackDrawable(drawable Drawable) {
+	w, err := gc.NewWindow(1, 1, 0, 0) //h,w, y,x
+	w.Print(drawable.GetSymbol())
+	objs = append(objs, textObject{w, drawable})
 }
 
-func (display textDisplay) Update() {
-	for i := 0; i < display.Height(); i++ {
-		fmt.Println(string(display.buffer[i : display.Width()*(i+1)]))
+func (display *textDisplay) RemoveDrawable(drawable Drawable) {
+	//Loop through to find the element
+	for i, obj := range objs {
+		if obj.Drawable == drawable {
+			objs = append(objs[:i], objs[i+1:])
+			break
+		}
 	}
+}
+
+//LoadWorld converts the current world into bunch of textObjects so it
+//will  be easier to render using goncurses
+func (display *textDisplay) LoadWorld(rect Rect) {
+
+}
+
+//Update updates the UI. Makes changes to all the different panes accordingly.
+func (display *textDisplay) Update(rect Rect) {
+	for i, obj := range objs {
+		draw(obj, display.stdscr)
+	}
+}
+
+func (display *textDisplay) DisplayStats(stats string) {
+}
+func (display *textDisplay) DisplayDesc(desc string) {
+}
+
+//PrintMessage will display messages. Can be useful for debugging.
+func (display *textDisplay) PrintMessage(message string) {
 }
 
 func (display textDisplay) Width() int {

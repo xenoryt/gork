@@ -20,23 +20,25 @@ var input chan byte
 //This channel is used to recieve update information
 var update chan int
 
+//GetInputChan gets a channel that contains user input
 func GetInputChan() chan byte {
 	return input
 }
 
 //LoadWorld loads the world into a buffer
-func LoadWorld() {
+func LoadWorld([][]world.Scene) {
 }
 
 //DisplayWorld displays a section of the world on the screen.
 func DisplayWorld(cam Rect) {
+	display.DisplayWorld(cam)
 }
 
-func Init(x, y, int, textbased bool) error {
+//Init initializes the UI
+func Init(textbased bool) error {
 	if textbased {
-		display = textDisplay.Get()
-		gui = false
+		display = TextDisplay.GetDisplay()
 	}
-	gui = true
+	gui = !true
 	return nil
 }

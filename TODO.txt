@@ -1,8 +1,10 @@
 UI related
-- finish package for rendering UI
-- create package for rendering the world and entities
+- read up on goncurses
+- use goncurses to implement the different windows to display world, stats, etc
+- create a Status(?) interface/struct for an easy way to display statuses?
+- 
 
 World related
 - add villages
 - add roads
-- 
+- move Scene to another package?
