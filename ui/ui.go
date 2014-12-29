@@ -5,14 +5,15 @@ a graphical one*/
 package ui
 
 import (
-	. "github.com/xenoryt/gork/rect"
+	"github.com/xenoryt/gork/errors"
+	"github.com/xenoryt/gork/rect"
 	"github.com/xenoryt/gork/ui/textdisplay"
 	"github.com/xenoryt/gork/world"
 )
 
 var display Display
 var gui bool
-var cam Rect
+var cam rect.Rect
 
 //This channel is used to send user input
 var input chan byte
@@ -29,16 +30,22 @@ func GetInputChan() chan byte {
 func LoadWorld([][]world.Scene) {
 }
 
-//DisplayWorld displays a section of the world on the screen.
-func DisplayWorld(cam Rect) {
-	display.DisplayWorld(cam)
+//Update updates the UI
+func Update(cam rect.Rect) {
+	display.Update(cam)
 }
 
 //Init initializes the UI
-func Init(textbased bool) error {
-	if textbased {
-		display = TextDisplay.GetDisplay()
+func Init() error {
+	display = TextDisplay.GetDisplay()
+	gui = false
+	if display == nil {
+		return errors.New("Failed to initialize window")
 	}
-	gui = !true
 	return nil
+}
+
+//Close terminates the UI
+func Close() {
+	display.Close()
 }

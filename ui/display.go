@@ -11,15 +11,18 @@ type Display interface {
 	//For initializing the display
 	Init() error
 
+	//Close closes the display
+	Close()
+
 	//IsGUI is true iff this display can draw pictures
 	IsGUI() bool
 
 	//TrackDrawable converts the Drawable into a textObject and will continue
 	//to render it on the world
-	TrackDrawable(Drawable)
+	TrackDrawable(Drawable) error
 
 	//RemoveDrawable stops the tracking of the given Drawable.
-	RemoveDrawable(Drawable)
+	RemoveDrawable(Drawable) error
 
 	//Update updates the display and outputs it to the screen
 	Update(Rect)

@@ -54,7 +54,6 @@ func (display textDisplay) Init() error {
 		if err != nil {
 			log.Fatal("init:", err)
 		}
-		defer gc.End()
 
 		gc.StartColor()
 		gc.Raw(true)
@@ -101,6 +100,10 @@ func (display textDisplay) Init() error {
 	return errors.New("Display already initialized!")
 }
 
+func (display textDisplay) Close() {
+	gc.End()
+}
+
 func (display textDisplay) IsGUI() bool {
 	return false
 }
@@ -124,7 +127,7 @@ func (display *textDisplay) TrackDrawable(drawable Drawable) error {
 	return nil
 }
 
-func (display *textDisplay) RemoveDrawable(drawable Drawable) {
+func (display *textDisplay) RemoveDrawable(drawable Drawable) error {
 	//Loop through to find the element
 	for i, obj := range objs {
 		if obj.Drawable == drawable {
@@ -132,6 +135,7 @@ func (display *textDisplay) RemoveDrawable(drawable Drawable) {
 			break
 		}
 	}
+	return nil
 }
 
 //LoadWorld converts the current world into bunch of textObjects so it
