@@ -12,8 +12,9 @@ func main() {
 		fmt.Println(err)
 		return
 	}
-
 	defer display.Close()
+
+	display.Timeout(200)
 
 loop:
 	for {

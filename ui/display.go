@@ -33,7 +33,10 @@ type Display interface {
 	//region of the world to display.
 	Update(Rect)
 
-	Sleep(int)
+	//Timeout sets the amount of time to wait for a keypress
+	Timeout(int)
+
+	//Sleep(int)
 
 	DisplayStats(string)
 	DisplayDesc(string)

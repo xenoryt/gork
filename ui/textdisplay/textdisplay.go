@@ -166,6 +166,10 @@ func (display *textDisplay) Update(rect Rect) {
 	display.stdscr.Refresh()
 }
 
+func (display *textDisplay) Timeout(delay int) {
+	display.stdscr.Timeout(delay)
+}
+
 func (display textDisplay) Sleep(ms int) {
 	gc.Nap(ms)
 }
