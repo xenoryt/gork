@@ -14,24 +14,33 @@ type Display interface {
 	//Close closes the display
 	Close()
 
-	//IsGUI is true iff this display can draw pictures
+	GetInput() int
+
+	//IsGUI returns true iff the ui is graphical
 	IsGUI() bool
 
-	//TrackDrawable converts the Drawable into a textObject and will continue
-	//to render it on the world
+	//TrackDrawable converts the Drawable into
+	//a textObject and will continue to render it
+	//on the world
 	TrackDrawable(Drawable) error
 
-	//RemoveDrawable stops the tracking of the given Drawable.
+	//RemoveDrawable stops the tracking of the given
+	//Drawable.
 	RemoveDrawable(Drawable) error
 
-	//Update updates the display and outputs it to the screen
+	//Update updates the display and outputs it
+	//to the screen. The Rect passed in is the
+	//region of the world to display.
 	Update(Rect)
+
+	Sleep(int)
 
 	DisplayStats(string)
 	DisplayDesc(string)
 
-	//PrintMessage will display messages. Can be useful for debugging.
-	PrintMessage(string)
+	//Print will display messages.
+	//Can be useful for debugging.
+	Print(string)
 
 	Width() int
 	Height() int

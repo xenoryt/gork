@@ -6,46 +6,32 @@ package ui
 
 import (
 	"github.com/xenoryt/gork/errors"
-	"github.com/xenoryt/gork/rect"
 	"github.com/xenoryt/gork/ui/textdisplay"
-	"github.com/xenoryt/gork/world"
 )
 
 var display Display
-var gui bool
-var cam rect.Rect
 
-//This channel is used to send user input
-var input chan byte
-
-//This channel is used to recieve update information
-var update chan int
-
-//GetInputChan gets a channel that contains user input
-func GetInputChan() chan byte {
-	return input
-}
-
-//LoadWorld loads the world into a buffer
-func LoadWorld([][]world.Scene) {
-}
-
-//Update updates the UI
-func Update(cam rect.Rect) {
-	display.Update(cam)
-}
-
-//Init initializes the UI
-func Init() error {
-	display = TextDisplay.GetDisplay()
-	gui = false
-	if display == nil {
-		return errors.New("Failed to initialize window")
+//Init initializes the UI and returns the display
+//Only one display can be open at a time.
+func Init(gui bool) (Display, error) {
+	if display != nil {
+		if display.IsGUI() == gui {
+			return display, nil
+		} else {
+			display.Close()
+		}
 	}
-	return nil
+
+	display = TextDisplay.GetDisplay()
+
+	//Can't think of any reason why this may fail, but just in case...
+	if display == nil {
+		return nil, errors.New("Failed to create instance of text display")
+	}
+	return display, display.Init()
 }
 
-//Close terminates the UI
+//Close closes any open display
 func Close() {
 	display.Close()
 }

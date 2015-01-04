@@ -7,16 +7,19 @@ import (
 	. "github.com/xenoryt/gork/ui/drawable"
 	uiconst "github.com/xenoryt/gork/ui/uiconstants"
 	//"github.com/xenoryt/gork/world"
+	"fmt"
 	"log"
 )
 
 var (
-	tdInstance *textDisplay = new(textDisplay)
-	objs       []textObject
+	tdInstance *textDisplay
 )
 
 //GetDisplay gets an instance of textDisplay
 func GetDisplay() *textDisplay {
+	if tdInstance == nil {
+		tdInstance = new(textDisplay)
+	}
 	return tdInstance
 }
 
@@ -43,12 +46,14 @@ type textDisplay struct {
 	initialized   bool
 	padding       int
 
-	stdscr *gc.Window
+	stdscr  *gc.Window
+	closing bool
 }
 
 //Init initializes the display to a specific width and height
-func (display textDisplay) Init() error {
+func (display *textDisplay) Init() error {
 	if !display.initialized {
+		display.closing = false
 
 		stdscr, err := gc.Init()
 		if err != nil {
@@ -61,11 +66,14 @@ func (display textDisplay) Init() error {
 		gc.Cursor(0)
 		stdscr.Clear()
 		stdscr.Keypad(true)
+		stdscr.Timeout(0)
 
-		width, height := stdscr.MaxYX()
+		height, width := stdscr.MaxYX()
 
 		if width < uiconst.MinWidth || height < uiconst.MinHeight {
-			return errors.New("Window does not meet minimum width and height requirements")
+			display.Close()
+			return fmt.Errorf("Window does not meet minimum width and height requirements\n"+
+				"currently: %dx%d, requires: %dx%d", width, height, uiconst.MinWidth, uiconst.MinHeight)
 		}
 		display.stdscr = stdscr
 		display.width = width
@@ -101,7 +109,13 @@ func (display textDisplay) Init() error {
 }
 
 func (display textDisplay) Close() {
+	display.closing = true
 	gc.End()
+}
+
+//GetInputChan returns a channel that user input will be passed into
+func (display *textDisplay) GetInput() int {
+	return int(display.stdscr.GetChar())
 }
 
 func (display textDisplay) IsGUI() bool {
@@ -123,15 +137,15 @@ func (display *textDisplay) TrackDrawable(drawable Drawable) error {
 		return err
 	}
 	w.Print(drawable.GetSymbol())
-	objs = append(objs, textObject{w, drawable})
+	display.objs = append(display.objs, textObject{w, drawable})
 	return nil
 }
 
 func (display *textDisplay) RemoveDrawable(drawable Drawable) error {
 	//Loop through to find the element
-	for i, obj := range objs {
+	for i, obj := range display.objs {
 		if obj.Drawable == drawable {
-			objs = append(objs[:i], objs[i+1:]...)
+			display.objs = append(display.objs[:i], display.objs[i+1:]...)
 			break
 		}
 	}
@@ -146,9 +160,14 @@ func (display *textDisplay) LoadWorld(rect Rect) {
 
 //Update updates the UI. Makes changes to all the different panes accordingly.
 func (display *textDisplay) Update(rect Rect) {
-	for _, obj := range objs {
+	for _, obj := range display.objs {
 		draw(obj, display.stdscr)
 	}
+	display.stdscr.Refresh()
+}
+
+func (display textDisplay) Sleep(ms int) {
+	gc.Nap(ms)
 }
 
 func (display *textDisplay) DisplayStats(stats string) {
@@ -156,8 +175,10 @@ func (display *textDisplay) DisplayStats(stats string) {
 func (display *textDisplay) DisplayDesc(desc string) {
 }
 
-//PrintMessage will display messages. Can be useful for debugging.
-func (display *textDisplay) PrintMessage(message string) {
+//Printwill display messages. Can be useful for debugging.
+func (display *textDisplay) Print(message string) {
+	display.stdscr.MovePrint(0, 0, message)
+	display.stdscr.Refresh()
 }
 
 func (display textDisplay) Width() int {
