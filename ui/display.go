@@ -14,14 +14,15 @@ type Display interface {
 	//Close closes the display
 	Close()
 
-	GetInput() int
+	GetInputChan() chan int
 
 	//IsGUI returns true iff the ui is graphical
 	IsGUI() bool
 
 	//TrackDrawable converts the Drawable into
 	//a textObject and will continue to render it
-	//on the world
+	//on the world.
+	//NOTE: Please pass in a POINTER to the object
 	TrackDrawable(Drawable) error
 
 	//RemoveDrawable stops the tracking of the given
@@ -41,9 +42,9 @@ type Display interface {
 	DisplayStats(string)
 	DisplayDesc(string)
 
-	//Print will display messages.
+	//Error will display a message in a popup window.
 	//Can be useful for debugging.
-	Print(string)
+	Error(string)
 
 	Width() int
 	Height() int

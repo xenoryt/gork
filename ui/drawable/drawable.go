@@ -1,7 +1,7 @@
 package drawable
 
-//Drawable is anything that you can get the location of
+//Drawable is anything that you can draw onto the screen.
 type Drawable interface {
-	GetLoc() (x, y int)
-	GetSymbol() byte
+	Loc() (x, y int)
+	Symbol() byte
 }
