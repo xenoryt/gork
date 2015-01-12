@@ -19,6 +19,11 @@ type Display interface {
 	//IsGUI returns true iff the ui is graphical
 	IsGUI() bool
 
+	//LoadWorld loads the world into memory. This should
+	//be called before doing anything.
+	//TODO: Possibly merge this into Init()?
+	LoadWorld(worldmap [][]Drawable) error
+
 	//TrackDrawable converts the Drawable into
 	//a textObject and will continue to render it
 	//on the world.
@@ -33,6 +38,9 @@ type Display interface {
 	//to the screen. The Rect passed in is the
 	//region of the world to display.
 	Update(Rect)
+
+	//SetView sets where the camera is looking at
+	SetView(Rect)
 
 	//Timeout sets the amount of time to wait for a keypress
 	Timeout(int)

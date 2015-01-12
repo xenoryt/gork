@@ -36,11 +36,11 @@ func (cmd command) String() string {
 	return ""
 }
 
-func (cmd command) TextObject() textObject {
-	if obj, ok := cmd.data.(textObject); ok {
-		return obj
+func (cmd command) Drawable() (Drawable, bool) {
+	if obj, ok := cmd.data.(Drawable); ok {
+		return obj, true
 	}
-	return textObject{}
+	return nil, false
 }
 
 //textObject is to store information of objects that need to be rendered
@@ -81,9 +81,9 @@ func draw(obj textObject, w *gc.Window) {
 
 /*textDisplay is a text-based implementation of Display*/
 type textDisplay struct {
-	world       [][]textObject
-	worldBounds rect.Rect
-	objs        []textObject
+	world [][]textObject
+	view  rect.Rect
+	objs  []textObject
 
 	width, height int
 	initialized   bool
@@ -168,8 +168,24 @@ mainloop:
 		case cmd := <-display.updateChan:
 			switch cmd.cmdType {
 			case uiconst.CMD_TRACK:
-				display.objs = append(display.objs)
+				if drawable, ok := cmd.Drawable(); ok {
+					w, err := gc.NewWindow(1, 1, 0, 0) //h,w, y,x
+					if err != nil {
+						return err
+					}
+					w.Print(drawable.Symbol())
+					display.objs = append(textObject{w, drawable})
+				}
 			case uiconst.CMD_REMOVE:
+				if drawable, ok := cmd.Drawable(); ok {
+					//Loop through to find the element
+					for i, obj := range display.objs {
+						if obj.Drawable == drawable {
+							display.objs = append(display.objs[:i], display.objs[i+1:]...)
+							break
+						}
+					}
+				}
 			case uiconst.CMD_UPDATE:
 			case uiconst.CMD_EXIT:
 				break mainloop
@@ -194,22 +210,24 @@ func (display textDisplay) IsGUI() bool {
 	return false
 }
 
-/*
-func (display *textDisplay) Render(obj Renderable) error {
-	//Check if obj is a TextObject, if so add it to the buffer
-	if txtobj, ok := obj.(TextObject); ok {
-		return display.put(txtobj)
+func (display *textDisplay) LoadWorld(worldmap [][]Drawable) error {
+	display.world = make([][]textObject, len(worldmap))
+	for y := range worldmap {
+		display.world[y] = make([]textObject, len(worldmap[y]))
+		for x, drawable := range worldmap[y] {
+			w, err := gc.NewWindow(1, 1, y, x)
+			if err != nil {
+				return err
+			}
+			w.Print(drawable.Symbol())
+			display.world[y][x] = textObject{w, drawable}
+		}
 	}
-	return GenericError("Invalid object recieved: not a TextObject")
-}*/
+	return nil
+}
 
 func (display *textDisplay) TrackDrawable(drawable Drawable) error {
-	w, err := gc.NewWindow(1, 1, 0, 0) //h,w, y,x
-	if err != nil {
-		return err
-	}
-	w.Print(drawable.Symbol())
-	display.updateChan <- command{uiconst.CMD_TRACK, textObject{w, drawable}}
+	display.updateChan <- command{uiconst.CMD_TRACK, drawable}
 	return nil
 }
 
@@ -224,12 +242,6 @@ func (display *textDisplay) RemoveDrawable(drawable Drawable) error {
 	return nil
 }
 
-//LoadWorld converts the current world into bunch of textObjects so it
-//will  be easier to render using goncurses
-func (display *textDisplay) LoadWorld(rect rect.Rect) {
-
-}
-
 //Update updates the UI. Makes changes to all the different panes accordingly.
 func (display *textDisplay) Update(rect rect.Rect) {
 	//display.stdscr.Erase()
@@ -238,6 +250,10 @@ func (display *textDisplay) Update(rect rect.Rect) {
 	//}
 	//display.stdscr.Refresh()
 	//gc.Nap(100)
+}
+
+func (display *textDisplay) SetView(view rect.Rect) {
+	display.view = view
 }
 
 func (display *textDisplay) Timeout(delay int) {
