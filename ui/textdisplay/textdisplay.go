@@ -1,7 +1,7 @@
 package TextDisplay
 
 import (
-	gc "code.google.com/p/goncurses"
+	gc "github.com/rthornton128/goncurses"
 	"github.com/xenoryt/gork/rect"
 	. "github.com/xenoryt/gork/ui/drawable"
 	uiconst "github.com/xenoryt/gork/ui/uiconstants"

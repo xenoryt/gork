@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+
 	"github.com/xenoryt/gork/rect"
 	"github.com/xenoryt/gork/ui"
 )
