@@ -1,9 +1,8 @@
-package TextDisplay
+package ui
 
-import (
-	. "github.com/xenoryt/gork/errors"
-	//. "../../errors"
-)
+import "errors"
+
+//. "../../errors"
 
 type pane struct {
 	buffer   [][]byte
@@ -51,7 +50,7 @@ func (p *pane) print(text []byte) error {
 		caret := i + bpos
 		//Make sure we're not out of bounds
 		if caret >= p.width*p.height {
-			return GenericError("Error: couldn't print everything. Pane overflowed!")
+			return errors.New("Error: couldn't print everything. Pane overflowed!")
 		}
 
 		//Add the character to the buffer

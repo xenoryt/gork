@@ -1,50 +1,44 @@
 package ui
 
 import (
-	. "github.com/xenoryt/gork/rect"
-	. "github.com/xenoryt/gork/ui/drawable"
+	"github.com/xenoryt/gork/shape"
 )
 
-/*Display is an object that is able to render things in a buffer
-then finally display it to the user*/
-type Display interface {
-	//For initializing the display
-	Init() error
+//Type specifies the type of display
+type Type int
 
+const (
+	TextDisplay Type = iota
+	GraphicalDisplay
+)
+
+/*Display is the interface that wraps all the functionality for displaying
+things to the user.
+*/
+type Display interface {
+	Init() error
 	//Close closes the display
 	Close()
 
-	GetInputChan() chan int
+	//GetInput returns a channel that keypresses will be sent through
+	GetInput() int
 
-	//IsGUI returns true iff the ui is graphical
-	IsGUI() bool
+	//Type returns the display type
+	Type() Type
 
-	//TrackDrawable converts the Drawable into
-	//a textObject and will continue to render it
-	//on the world.
-	//NOTE: Please pass in a POINTER to the object
-	TrackDrawable(Drawable) error
+	//DrawChar creates a Drawable at the location (x, y)
+	DrawRune(char rune, x, y int) Drawable
 
-	//RemoveDrawable stops the tracking of the given
-	//Drawable.
-	RemoveDrawable(Drawable) error
+	//DrawBG stores the background
+	DrawBG(bg []string)
 
 	//Update updates the display and outputs it
 	//to the screen. The Rect passed in is the
 	//region of the world to display.
-	Update(Rect)
+	Update(shape.Rect)
 
-	//Timeout sets the amount of time to wait for a keypress
-	Timeout(int)
-
-	//Sleep(int)
-
-	DisplayStats(string)
-	DisplayDesc(string)
-
-	//Error will display a message in a popup window.
-	//Can be useful for debugging.
-	Error(string)
+	// DisplayStats(string)
+	// DisplayDesc(string)
 
 	Width() int
 	Height() int

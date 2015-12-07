@@ -1,7 +1,7 @@
-package rect
+package shape
 
-//New creates a new Rect object
-func New(x, y, width, height int) Rect {
+//NewRect creates a new Rect object
+func NewRect(x, y, width, height int) Rect {
 	return Rect{x, y, width, height}
 }
 
